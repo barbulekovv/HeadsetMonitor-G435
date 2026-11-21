@@ -90,11 +90,9 @@ Currently developed and tested for Logitech G435. Other headset models are not o
 
 
 
-\## License
+## License
 
-
-
-License information will be added soon.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 
 
