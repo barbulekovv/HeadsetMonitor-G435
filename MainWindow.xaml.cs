@@ -1380,6 +1380,25 @@ namespace HeadsetMonitor
         // ЗАВЕРШЕНИЕ ПРИЛОЖЕНИЯ
         // =========================================================
 
+        private void FeedbackButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://github.com/barbulekovv/HeadsetMonitor-G435/issues/new",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    "Не удалось открыть страницу обратной связи.\n\n" + ex.Message,
+                    "Headset Monitor",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+        }
         protected override void OnClosed(EventArgs e)
         {
             SaveWindowSettings();

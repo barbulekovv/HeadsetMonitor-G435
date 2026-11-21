@@ -1,4 +1,4 @@
-
+﻿
 #define MyAppName "Headset Monitor"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "Headset Monitor"
@@ -36,3 +36,4 @@ Name: "{autodesktop}\Headset Monitor"; Filename: "{app}\HeadsetMonitor.exe"; Ico
 
 [Run]
 Filename: "{app}\HeadsetMonitor.exe"; Description: "Запустить Headset Monitor"; Flags: postinstall nowait skipifsilent
+
