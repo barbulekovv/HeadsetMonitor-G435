@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Linq;
 using System.Threading;
@@ -55,6 +55,11 @@ namespace HeadsetMonitor
         public MainWindow()
         {
             InitializeComponent();
+
+            SettingsView.SaveRequested += SettingsView_SaveRequested;
+            SettingsView.CancelRequested += SettingsView_CancelRequested;
+
+            SourceInitialized += (_, _) => ApplyDarkTitleBar();
 
             RestoreWindowBounds();
 
@@ -210,19 +215,27 @@ namespace HeadsetMonitor
         private void SettingsButton_Click(
             object sender, RoutedEventArgs e)
         {
-            var window = new SettingsWindow(settings)
-            {
-                Owner = this
-            };
+            SettingsView.SetSettings(settings);
 
-            if (window.ShowDialog() != true)
-                return;
+            DashboardView.Visibility = Visibility.Collapsed;
+            SettingsView.Visibility = Visibility.Visible;
+        }
 
-            settings = window.Settings;
-
+        private void SettingsView_SaveRequested(object? sender, EventArgs e)
+        {
+            settings = SettingsView.Settings;
             settings.Save();
 
             ApplySettings();
+
+            SettingsView.Visibility = Visibility.Collapsed;
+            DashboardView.Visibility = Visibility.Visible;
+        }
+
+        private void SettingsView_CancelRequested(object? sender, EventArgs e)
+        {
+            SettingsView.Visibility = Visibility.Collapsed;
+            DashboardView.Visibility = Visibility.Visible;
         }
 
         private void ApplySettings()
@@ -381,6 +394,8 @@ namespace HeadsetMonitor
             }
 
             UpdateBatteryBar();
+
+            SettingsView.ApplyTheme();
         }
 
         // =========================================================
@@ -526,6 +541,24 @@ namespace HeadsetMonitor
             }
         }
 
+        private void ApplyDarkTitleBar()
+        {
+            const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+            int enabled = 1;
+
+            DwmSetWindowAttribute(
+                new System.Windows.Interop.WindowInteropHelper(this).Handle,
+                DWMWA_USE_IMMERSIVE_DARK_MODE,
+                ref enabled,
+                sizeof(int));
+        }
+
+        [DllImport("dwmapi.dll", PreserveSig = true)]
+        private static extern int DwmSetWindowAttribute(
+            IntPtr hwnd,
+            int attribute,
+            ref int value,
+            int valueSize);
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool DestroyIcon(IntPtr handle);
 
