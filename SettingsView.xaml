@@ -11,11 +11,25 @@
         <SolidColorBrush x:Key="WindowForeground" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="PanelBrush" Color="#1B1D25"/>
         <SolidColorBrush x:Key="MutedBrush" Color="#9295A5"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#8B7CFF"/>
+
+        <SolidColorBrush x:Key="AccentBrush" Color="#7565D9"/>
+        <SolidColorBrush x:Key="AccentHover" Color="#8677E8"/>
+        <SolidColorBrush x:Key="AccentPressed" Color="#5D4DBB"/>
+        <SolidColorBrush x:Key="AccentSoft" Color="#342D52"/>
+
+        <SolidColorBrush x:Key="CheckBoxUncheckedBackground" Color="#252733"/>
+        <SolidColorBrush x:Key="CheckBoxUncheckedBorder" Color="#514B78"/>
+
+        <SolidColorBrush x:Key="SecondaryButtonBackground" Color="#30313D"/>
+        <SolidColorBrush x:Key="SecondaryButtonBorder" Color="#514B78"/>
+        <SolidColorBrush x:Key="SecondaryButtonForeground" Color="#F2F1F8"/>
+        <SolidColorBrush x:Key="SecondaryButtonHover" Color="#484258"/>
+        <SolidColorBrush x:Key="SecondaryButtonPressed" Color="#393348"/>
+
         <SolidColorBrush x:Key="ComboBackground" Color="#252733"/>
         <SolidColorBrush x:Key="ComboBorder" Color="#514B78"/>
-        <SolidColorBrush x:Key="ComboHighlight" Color="#514B78"/>
-        <SolidColorBrush x:Key="ComboSelected" Color="#7565E8"/>
+        <SolidColorBrush x:Key="ComboHighlight" Color="#342D52"/>
+        <SolidColorBrush x:Key="ComboSelected" Color="#5D4DBB"/>
         <SolidColorBrush x:Key="ComboHighlightForeground" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="ComboSelectedForeground" Color="#FFFFFF"/>
 
@@ -42,19 +56,19 @@
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="{x:Type Thumb}">
                                                 <Border x:Name="ThumbBorder"
-                                                        Background="#7565E8"
+                                                        Background="{DynamicResource AccentBrush}"
                                                         CornerRadius="5"
                                                         Margin="1,0"/>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
                                                         <Setter TargetName="ThumbBorder"
                                                                 Property="Background"
-                                                                Value="#8B7CFF"/>
+                                                                Value="{DynamicResource AccentHover}"/>
                                                     </Trigger>
                                                     <Trigger Property="IsDragging" Value="True">
                                                         <Setter TargetName="ThumbBorder"
                                                                 Property="Background"
-                                                                Value="#5145B8"/>
+                                                                Value="{DynamicResource AccentPressed}"/>
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
@@ -78,6 +92,7 @@
             <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
         </Style>
 
+        <!-- CHECKBOX -->
         <Style TargetType="CheckBox">
             <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
             <Setter Property="FontSize" Value="13"/>
@@ -92,31 +107,53 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Border x:Name="CheckBorder" Width="17" Height="17"
-                                    CornerRadius="5" Background="#252733"
-                                    BorderBrush="#514B78" BorderThickness="1"
+
+                            <Border x:Name="CheckBorder"
+                                    Width="17"
+                                    Height="17"
+                                    CornerRadius="5"
+                                    Background="{DynamicResource CheckBoxUncheckedBackground}"
+                                    BorderBrush="{DynamicResource CheckBoxUncheckedBorder}"
+                                    BorderThickness="1"
                                     VerticalAlignment="Center">
-                                <Path x:Name="CheckMark" Data="M 3 8 L 6.5 11.5 L 14 4"
-                                      Stroke="White" StrokeThickness="2"
-                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"
-                                      StrokeLineJoin="Round" Visibility="Collapsed"/>
+                                <Path x:Name="CheckMark"
+                                      Data="M 3 8 L 6.5 11.5 L 14 4"
+                                      Stroke="White"
+                                      StrokeThickness="2"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round"
+                                      Visibility="Collapsed"/>
                             </Border>
-                            <ContentPresenter Grid.Column="1" Margin="9,0,0,0"
+
+                            <ContentPresenter Grid.Column="1"
+                                              Margin="9,0,0,0"
                                               VerticalAlignment="Center"
                                               RecognizesAccessKey="True"
                                               Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}"
                                               ContentStringFormat="{TemplateBinding ContentStringFormat}"/>
                         </Grid>
+
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="CheckBorder" Property="Background" Value="#7565E8"/>
-                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="#8B7CFF"/>
-                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="CheckBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="CheckBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource AccentHover}"/>
+                                <Setter TargetName="CheckMark"
+                                        Property="Visibility"
+                                        Value="Visible"/>
                             </Trigger>
+
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="#8B7CFF"/>
+                                <Setter TargetName="CheckBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
+
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.5"/>
                             </Trigger>
@@ -126,6 +163,71 @@
             </Setter>
         </Style>
 
+        <!-- ACCENT COLOR CIRCLES -->
+        <Style x:Key="AccentSwatchStyle" TargetType="{x:Type RadioButton}">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="0,0,10,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type RadioButton}">
+                        <Border x:Name="OuterBorder"
+                                CornerRadius="16"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource MutedBrush}"
+                                Padding="3">
+                            <Grid>
+                                <Ellipse Fill="{TemplateBinding Background}"/>
+
+                                <Path x:Name="SelectedMark"
+                                      Data="M 3 12 L 9 18 L 21 6"
+                                      Width="18"
+                                      Height="18"
+                                      Stretch="Uniform"
+                                      Stroke="White"
+                                      StrokeThickness="2.2"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Visibility="Collapsed"/>
+                            </Grid>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="OuterBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="OuterBorder"
+                                        Property="BorderThickness"
+                                        Value="2.5"/>
+                                <Setter TargetName="SelectedMark"
+                                        Property="Visibility"
+                                        Value="Visible"/>
+                            </Trigger>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="OuterBorder"
+                                        Property="Opacity"
+                                        Value="0.8"/>
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="OuterBorder"
+                                        Property="Opacity"
+                                        Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- COMBOBOX ITEMS -->
         <Style x:Key="SettingsComboBoxItem" TargetType="{x:Type ComboBoxItem}">
             <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
             <Setter Property="Background" Value="{DynamicResource ComboBackground}"/>
@@ -159,6 +261,7 @@
             </Style.Triggers>
         </Style>
 
+        <!-- COMBOBOX -->
         <Style x:Key="SettingsComboBoxStyle" TargetType="{x:Type ComboBox}">
             <Setter Property="Height" Value="38"/>
             <Setter Property="Background" Value="{DynamicResource ComboBackground}"/>
@@ -173,54 +276,80 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ComboBox}">
                         <Grid>
-                            <ToggleButton x:Name="ToggleButton" Focusable="False" ClickMode="Press"
+                            <ToggleButton x:Name="ToggleButton"
+                                          Focusable="False"
+                                          ClickMode="Press"
                                           IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                           Background="{DynamicResource ComboBackground}"
-                                          BorderBrush="{DynamicResource ComboBorder}" BorderThickness="1">
+                                          BorderBrush="{DynamicResource ComboBorder}"
+                                          BorderThickness="1">
                                 <ToggleButton.Template>
                                     <ControlTemplate TargetType="{x:Type ToggleButton}">
-                                        <Border x:Name="ToggleBorder" Background="{TemplateBinding Background}"
+                                        <Border x:Name="ToggleBorder"
+                                                Background="{TemplateBinding Background}"
                                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7">
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="7">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition/>
                                                     <ColumnDefinition Width="32"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Path Grid.Column="1" Data="M 0 0 L 4 4 L 8 0"
-                                                      Stroke="{DynamicResource WindowForeground}" StrokeThickness="1.7"
-                                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <Path Grid.Column="1"
+                                                      Data="M 0 0 L 4 4 L 8 0"
+                                                      Stroke="{DynamicResource WindowForeground}"
+                                                      StrokeThickness="1.7"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
                                             </Grid>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="ToggleBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                                <Setter TargetName="ToggleBorder"
+                                                        Property="BorderBrush"
+                                                        Value="{DynamicResource AccentBrush}"/>
                                             </Trigger>
                                             <Trigger Property="IsChecked" Value="True">
-                                                <Setter TargetName="ToggleBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                                <Setter TargetName="ToggleBorder"
+                                                        Property="BorderBrush"
+                                                        Value="{DynamicResource AccentBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </ToggleButton.Template>
                             </ToggleButton>
-                            <ContentPresenter IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}"
+
+                            <ContentPresenter IsHitTestVisible="False"
+                                              Content="{TemplateBinding SelectionBoxItem}"
                                               ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                               ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                                              Margin="11,0,38,0" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                              Margin="11,0,38,0"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"
                                               TextElement.Foreground="{DynamicResource WindowForeground}"/>
-                            <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}"
-                                   AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
+
+                            <Popup x:Name="Popup"
+                                   Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
                                 <Border Background="{DynamicResource ComboBackground}"
-                                        BorderBrush="{DynamicResource ComboBorder}" BorderThickness="1"
-                                        CornerRadius="7" Margin="0,4,0,0"
+                                        BorderBrush="{DynamicResource ComboBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="7"
+                                        Margin="0,4,0,0"
                                         MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
-                                    <ScrollViewer MaxHeight="190" CanContentScroll="True"
-                                                  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                    <ScrollViewer MaxHeight="190"
+                                                  CanContentScroll="True"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
                                         <ItemsPresenter/>
                                     </ScrollViewer>
                                 </Border>
                             </Popup>
                         </Grid>
+
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45"/>
@@ -231,13 +360,14 @@
             </Setter>
         </Style>
 
+        <!-- CANCEL BUTTON -->
         <Style x:Key="CancelButton" TargetType="Button">
             <Setter Property="Height" Value="38"/>
             <Setter Property="MinWidth" Value="100"/>
             <Setter Property="Padding" Value="15,0"/>
-            <Setter Property="Background" Value="#30313D"/>
-            <Setter Property="Foreground" Value="#F2F1F8"/>
-            <Setter Property="BorderBrush" Value="#514B78"/>
+            <Setter Property="Background" Value="{DynamicResource SecondaryButtonBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryButtonForeground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryButtonBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -256,13 +386,20 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#484258"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#8173C7"/>
-                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource SecondaryButtonHover}"/>
+                                <Setter TargetName="ButtonBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#393348"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#7565E8"/>
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource SecondaryButtonPressed}"/>
+                                <Setter TargetName="ButtonBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource AccentPressed}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.55"/>
@@ -273,11 +410,12 @@
             </Setter>
         </Style>
 
+        <!-- SAVE BUTTON -->
         <Style x:Key="ActionButton" TargetType="Button">
             <Setter Property="Height" Value="38"/>
             <Setter Property="MinWidth" Value="100"/>
             <Setter Property="Padding" Value="15,0"/>
-            <Setter Property="Background" Value="#7565E8"/>
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -295,10 +433,14 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#8B7CFF"/>
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource AccentHover}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#5145B8"/>
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource AccentPressed}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.55"/>
@@ -318,66 +460,212 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,18">
-            <TextBlock Text="НАСТРОЙКИ" FontSize="11" FontWeight="Bold"
+            <TextBlock Text="НАСТРОЙКИ"
+                       FontSize="11"
+                       FontWeight="Bold"
                        Foreground="{DynamicResource AccentBrush}"/>
-            <TextBlock Text="Параметры приложения" FontSize="25" FontWeight="SemiBold" Margin="0,5,0,0"/>
-            <TextBlock Text="Настрой работу Headset Monitor под себя" FontSize="12"
-                       Foreground="{DynamicResource MutedBrush}" Margin="0,4,0,0"/>
+            <TextBlock Text="Параметры приложения"
+                       FontSize="25"
+                       FontWeight="SemiBold"
+                       Margin="0,5,0,0"/>
+            <TextBlock Text="Настрой работу Headset Monitor под себя"
+                       FontSize="12"
+                       Foreground="{DynamicResource MutedBrush}"
+                       Margin="0,4,0,0"/>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
             <StackPanel>
-                <Border Background="{DynamicResource PanelBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+
+                <!-- APPEARANCE -->
+                <Border Background="{DynamicResource PanelBrush}"
+                        CornerRadius="12"
+                        Padding="16"
+                        Margin="0,0,0,12">
                     <StackPanel>
-                        <TextBlock Text="ВНЕШНИЙ ВИД" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource MutedBrush}"/>
-                        <TextBlock Text="Тема приложения" FontSize="13" Margin="0,12,0,0"/>
-                        <ComboBox x:Name="ThemeComboBox" Style="{StaticResource SettingsComboBoxStyle}">
+                        <TextBlock Text="ВНЕШНИЙ ВИД"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource MutedBrush}"/>
+
+                        <TextBlock Text="Тема приложения"
+                                   FontSize="13"
+                                   Margin="0,12,0,0"/>
+
+                        <ComboBox x:Name="ThemeComboBox"
+                                  Style="{StaticResource SettingsComboBoxStyle}">
                             <ComboBoxItem Content="Тёмная"/>
                             <ComboBoxItem Content="Светлая"/>
                             <ComboBoxItem Content="Как в Windows"/>
                         </ComboBox>
+
+                        <TextBlock Text="Акцентный цвет"
+                                   FontSize="13"
+                                   Margin="0,5,0,8"/>
+
+                        <WrapPanel x:Name="AccentColorPanel"
+                                   Orientation="Horizontal">
+
+                            <RadioButton x:Name="AccentPurpleRadioButton"
+                                         GroupName="AccentColors"
+                                         Tag="Purple"
+                                         Background="#7565D9"
+                                         Style="{StaticResource AccentSwatchStyle}"
+                                         ToolTip="Фиолетовый"
+                                         Checked="AccentColor_Checked"/>
+
+                            <RadioButton x:Name="AccentBlueRadioButton"
+                                         GroupName="AccentColors"
+                                         Tag="Blue"
+                                         Background="#3976CE"
+                                         Style="{StaticResource AccentSwatchStyle}"
+                                         ToolTip="Синий"
+                                         Checked="AccentColor_Checked"/>
+
+                            <RadioButton x:Name="AccentCyanRadioButton"
+                                         GroupName="AccentColors"
+                                         Tag="Cyan"
+                                         Background="#087F99"
+                                         Style="{StaticResource AccentSwatchStyle}"
+                                         ToolTip="Голубой"
+                                         Checked="AccentColor_Checked"/>
+
+                            <RadioButton x:Name="AccentGreenRadioButton"
+                                         GroupName="AccentColors"
+                                         Tag="Green"
+                                         Background="#27834F"
+                                         Style="{StaticResource AccentSwatchStyle}"
+                                         ToolTip="Зелёный"
+                                         Checked="AccentColor_Checked"/>
+
+                            <RadioButton x:Name="AccentRedRadioButton"
+                                         GroupName="AccentColors"
+                                         Tag="Red"
+                                         Background="#C34D59"
+                                         Style="{StaticResource AccentSwatchStyle}"
+                                         ToolTip="Красный"
+                                         Checked="AccentColor_Checked"/>
+
+                            <RadioButton x:Name="AccentOrangeRadioButton"
+                                         GroupName="AccentColors"
+                                         Tag="Orange"
+                                         Background="#B96A22"
+                                         Style="{StaticResource AccentSwatchStyle}"
+                                         ToolTip="Оранжевый"
+                                         Checked="AccentColor_Checked"/>
+
+                            <RadioButton x:Name="AccentPinkRadioButton"
+                                         GroupName="AccentColors"
+                                         Tag="Pink"
+                                         Background="#C04F87"
+                                         Style="{StaticResource AccentSwatchStyle}"
+                                         ToolTip="Розовый"
+                                         Checked="AccentColor_Checked"/>
+                        </WrapPanel>
+
+                        <TextBlock Text="Выбранный цвет применяется к кнопкам и другим акцентным элементам."
+                                   FontSize="11"
+                                   Foreground="{DynamicResource MutedBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,2"/>
                     </StackPanel>
                 </Border>
 
-                <Border Background="{DynamicResource PanelBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+                <!-- STARTUP -->
+                <Border Background="{DynamicResource PanelBrush}"
+                        CornerRadius="12"
+                        Padding="16"
+                        Margin="0,0,0,12">
                     <StackPanel>
-                        <TextBlock Text="ЗАПУСК И ПОВЕДЕНИЕ" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource MutedBrush}"/>
-                        <CheckBox x:Name="StartWithWindowsCheckBox" Content="Запускать вместе с Windows"/>
-                        <CheckBox x:Name="StartMinimizedCheckBox" Content="Запускать сразу свёрнутым в трей"/>
-                        <CheckBox x:Name="MinimizeToTrayCheckBox" Content="Сворачивать в трей при нажатии на крестик"/>
+                        <TextBlock Text="ЗАПУСК И ПОВЕДЕНИЕ"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource MutedBrush}"/>
+                        <CheckBox x:Name="StartWithWindowsCheckBox"
+                                  Content="Запускать вместе с Windows"/>
+                        <CheckBox x:Name="StartMinimizedCheckBox"
+                                  Content="Запускать сразу свёрнутым в трей"/>
+                        <CheckBox x:Name="MinimizeToTrayCheckBox"
+                                  Content="Сворачивать в трей при нажатии на крестик"/>
                         <TextBlock Text="Обычная кнопка сворачивания оставляет приложение на панели задач."
-                                   FontSize="11" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                   FontSize="11"
+                                   Foreground="{DynamicResource MutedBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8"/>
                     </StackPanel>
                 </Border>
 
-                <Border Background="{DynamicResource PanelBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+                <!-- NOTIFICATIONS -->
+                <Border Background="{DynamicResource PanelBrush}"
+                        CornerRadius="12"
+                        Padding="16"
+                        Margin="0,0,0,12">
                     <StackPanel>
-                        <TextBlock Text="УВЕДОМЛЕНИЯ" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource MutedBrush}"/>
-                        <CheckBox x:Name="LowBatteryCheckBox" Content="Уведомлять о низком заряде"/>
-                        <TextBlock Text="Порог низкого заряда" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,5,0,0"/>
-                        <ComboBox x:Name="LowBatteryThresholdComboBox" Style="{StaticResource SettingsComboBoxStyle}">
+                        <TextBlock Text="УВЕДОМЛЕНИЯ"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource MutedBrush}"/>
+                        <CheckBox x:Name="LowBatteryCheckBox"
+                                  Content="Уведомлять о низком заряде"/>
+                        <TextBlock Text="Порог низкого заряда"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource MutedBrush}"
+                                   Margin="0,5,0,0"/>
+                        <ComboBox x:Name="LowBatteryThresholdComboBox"
+                                  Style="{StaticResource SettingsComboBoxStyle}">
                             <ComboBoxItem Content="10%" Tag="10"/>
                             <ComboBoxItem Content="15%" Tag="15"/>
                             <ComboBoxItem Content="20%" Tag="20"/>
                             <ComboBoxItem Content="25%" Tag="25"/>
                         </ComboBox>
-                        <CheckBox x:Name="TrayPercentageCheckBox" Content="Показывать процент заряда в трее"/>
+                        <CheckBox x:Name="FullBatteryCheckBox"
+                                  Content="Уведомлять о полном заряде"/>
+                        <CheckBox x:Name="TrayPercentageCheckBox"
+                                  Content="Показывать процент заряда в трее"/>
                     </StackPanel>
                 </Border>
 
-                <Border Background="{DynamicResource PanelBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+                <!-- ADDITIONAL -->
+                <Border Background="{DynamicResource PanelBrush}"
+                        CornerRadius="12"
+                        Padding="16"
+                        Margin="0,0,0,12">
                     <StackPanel>
-                        <TextBlock Text="ДОПОЛНИТЕЛЬНО" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource MutedBrush}"/>
-                        <CheckBox x:Name="TechnicalInfoCheckBox" Content="Показывать техническую USB-информацию"/>
+                        <TextBlock Text="ДОПОЛНИТЕЛЬНО"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource MutedBrush}"/>
+                        <CheckBox x:Name="TechnicalInfoCheckBox"
+                                  Content="Показывать техническую USB-информацию"/>
+
+<TextBlock Text="Язык приложения"
+           FontSize="13"
+           Margin="0,12,0,0"/>
+
+<ComboBox x:Name="LanguageComboBox"
+          Style="{StaticResource SettingsComboBoxStyle}">
+    <ComboBoxItem Content="Русский" Tag="ru"/>
+    <ComboBoxItem Content="English" Tag="en"/>
+</ComboBox>
                     </StackPanel>
                 </Border>
+
             </StackPanel>
         </ScrollViewer>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
-            <Button Content="Отмена" Style="{StaticResource CancelButton}"
-                    Click="CancelButton_Click" Margin="0,0,10,0"/>
-            <Button Content="Сохранить" Style="{StaticResource ActionButton}" Click="SaveButton_Click"/>
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,18,0,0">
+            <Button Content="Отмена"
+                    Style="{StaticResource CancelButton}"
+                    Click="CancelButton_Click"
+                    Margin="0,0,10,0"/>
+            <Button Content="Сохранить"
+                    Style="{StaticResource ActionButton}"
+                    Click="SaveButton_Click"/>
         </StackPanel>
     </Grid>
 </UserControl>

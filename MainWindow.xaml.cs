@@ -28,13 +28,15 @@ namespace HeadsetMonitor
         private int? lastPercent;
         private int? lastNotifiedPercent;
 
-        // Последнее успешное измерение для подсказки в трее.
+        private bool fullBatteryNotified;
+
         private int? lastMeasurementPercent;
         private DateTime? lastMeasurementTime;
 
         private readonly DispatcherTimer updateTimer;
         private readonly DispatcherTimer deviceMonitorTimer;
         private readonly Forms.NotifyIcon trayIcon;
+        private TrayMenuWindow? trayMenuWindow;
 
         private AppSettings settings = AppSettings.Load();
 
@@ -45,6 +47,8 @@ namespace HeadsetMonitor
         private int receiverMissCount;
         private bool isInitializing = true;
         private bool exitRequested;
+        private bool isLightTheme;
+        private WindowState windowStateBeforeHide = WindowState.Normal;
 
         private const int VendorId = 0x046D;
         private const int ProductId = 0x0ACB;
@@ -55,6 +59,8 @@ namespace HeadsetMonitor
         public MainWindow()
         {
             InitializeComponent();
+Localization.SetLanguage(settings.Language);
+Localization.TranslateTree(this);
 
             SettingsView.SaveRequested += SettingsView_SaveRequested;
             SettingsView.CancelRequested += SettingsView_CancelRequested;
@@ -63,29 +69,18 @@ namespace HeadsetMonitor
 
             RestoreWindowBounds();
 
-            var trayMenu = new Forms.ContextMenuStrip();
-
-            var openItem = new Forms.ToolStripMenuItem("Открыть");
-            openItem.Click += (_, _) => RestoreWindow();
-
-            var exitItem = new Forms.ToolStripMenuItem("Выход");
-            exitItem.Click += (_, _) => ExitApplication();
-
-            trayMenu.Items.Add(openItem);
-            trayMenu.Items.Add(new Forms.ToolStripSeparator());
-            trayMenu.Items.Add(exitItem);
-
             trayIcon = new Forms.NotifyIcon
             {
                 Icon = settings.ShowTrayPercentage
                     ? CreateBatteryIcon(null)
                     : CreateTrayIcon(),
 
-                Text = "Headset Monitor: заряд ещё не проверен",
-                ContextMenuStrip = trayMenu,
+                Text = "Headset Monitor: " +
+       Localization.T("заряд ещё не проверен"),
                 Visible = true
             };
 
+            trayIcon.MouseUp += TrayIcon_MouseUp;
             trayIcon.DoubleClick += (_, _) => RestoreWindow();
 
             BatteryBarTrack.SizeChanged += (_, _) =>
@@ -119,7 +114,8 @@ namespace HeadsetMonitor
                 catch (Exception ex)
                 {
                     System.Windows.MessageBox.Show(
-                        "Не удалось настроить автозапуск Windows.\n\n" +
+                        Localization.T("Не удалось настроить автозапуск Windows.") +
+"\n\n" +
                         ex.Message,
                         "Headset Monitor",
                         MessageBoxButton.OK,
@@ -134,10 +130,8 @@ namespace HeadsetMonitor
                 if (settings.StartMinimizedToTray)
                     HideToTray();
 
-                // При каждом запуске сначала выполняем одну проверку.
                 await ReadBatteryAndUpdate(false);
 
-                // Автообновление запускается только после первой проверки.
                 if (settings.AutoUpdate)
                     StartAutoUpdate();
             };
@@ -222,15 +216,18 @@ namespace HeadsetMonitor
         }
 
         private void SettingsView_SaveRequested(object? sender, EventArgs e)
-        {
-            settings = SettingsView.Settings;
-            settings.Save();
+{
+    settings = SettingsView.Settings;
+    settings.Save();
 
-            ApplySettings();
+    Localization.SetLanguage(settings.Language);
+    Localization.TranslateTree(this);
 
-            SettingsView.Visibility = Visibility.Collapsed;
-            DashboardView.Visibility = Visibility.Visible;
-        }
+    ApplySettings();
+
+    SettingsView.Visibility = Visibility.Collapsed;
+    DashboardView.Visibility = Visibility.Visible;
+}
 
         private void SettingsView_CancelRequested(object? sender, EventArgs e)
         {
@@ -238,6 +235,7 @@ namespace HeadsetMonitor
             DashboardView.Visibility = Visibility.Visible;
         }
 
+       
         private void ApplySettings()
         {
             isInitializing = true;
@@ -260,8 +258,8 @@ namespace HeadsetMonitor
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    "Не удалось изменить автозапуск Windows.\n\n" +
-                    ex.Message,
+                    Localization.T("Не удалось изменить автозапуск Windows.") +
+                    "\n\n" + ex.Message,
                     "Headset Monitor",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -269,6 +267,7 @@ namespace HeadsetMonitor
 
             UpdateTrayBatteryIcon(lastPercent);
         }
+
 
         private void SelectInterval(int minutes)
         {
@@ -287,7 +286,7 @@ namespace HeadsetMonitor
         }
 
         // =========================================================
-        // ТЕМА
+        // ТЕМА И АКЦЕНТНЫЙ ЦВЕТ
         // =========================================================
 
         private void ApplyTheme()
@@ -313,6 +312,20 @@ namespace HeadsetMonitor
                 }
             }
 
+            isLightTheme = light;
+
+            AccentPreset accent =
+                AccentPalette.Get(settings.AccentColor);
+
+            Resources["Accent"] =
+                new SolidColorBrush(accent.Accent);
+
+            Resources["AccentHover"] =
+                new SolidColorBrush(accent.Hover);
+
+            Resources["AccentPressed"] =
+                new SolidColorBrush(accent.Pressed);
+
             if (light)
             {
                 Resources["WindowBackground"] =
@@ -327,20 +340,76 @@ namespace HeadsetMonitor
                 Resources["Muted"] =
                     new SolidColorBrush(Color.FromRgb(105, 108, 122));
 
-                Resources["Accent"] =
-                    new SolidColorBrush(Color.FromRgb(105, 88, 220));
+                Resources["AccentSoft"] =
+                    new SolidColorBrush(accent.SoftLight);
+
+                Resources["CheckBoxUncheckedBackground"] =
+                    new SolidColorBrush(Color.FromRgb(250, 251, 253));
+
+                Resources["CheckBoxUncheckedBorder"] =
+                    new SolidColorBrush(Color.FromRgb(195, 201, 212));
+
+                // Кнопка настроек
+                Resources["SettingsButtonBackground"] =
+                    new SolidColorBrush(Color.FromRgb(238, 240, 245));
+
+                Resources["SettingsButtonBorder"] =
+                    new SolidColorBrush(Color.FromRgb(217, 221, 230));
+
+                Resources["SettingsButtonForeground"] =
+                    new SolidColorBrush(Color.FromRgb(48, 51, 64));
+
+                Resources["SettingsButtonHover"] =
+                    new SolidColorBrush(accent.SoftLight);
+
+                Resources["SettingsButtonPressed"] =
+                    new SolidColorBrush(accent.SoftLight);
+
+                // USB-индикатор: светлая тема
+                Resources["UsbBadgeBackground"] =
+                    new SolidColorBrush(Color.FromRgb(226, 245, 233));
+
+                Resources["UsbBadgeForeground"] =
+                    new SolidColorBrush(Color.FromRgb(22, 107, 57));
+
+                Resources["UsbBadgeErrorBackground"] =
+                    new SolidColorBrush(Color.FromRgb(255, 230, 230));
+
+                Resources["UsbBadgeErrorForeground"] =
+                    new SolidColorBrush(Color.FromRgb(180, 25, 45));
+
+                // Статусы подключения
+                Resources["ConnectionConnectedForeground"] =
+                    new SolidColorBrush(Color.FromRgb(35, 117, 69));
+
+                Resources["ConnectionDisconnectedForeground"] =
+                    new SolidColorBrush(Color.FromRgb(180, 35, 50));
+
+                // Более контрастный статус ожидания
+                Resources["ConnectionUnknownForeground"] =
+                    new SolidColorBrush(Color.FromRgb(138, 63, 0));
+
+                // Совместимые ресурсы статусов
+                Resources["StatusSuccessForeground"] =
+                    new SolidColorBrush(Color.FromRgb(35, 117, 69));
+
+                Resources["StatusErrorForeground"] =
+                    new SolidColorBrush(Color.FromRgb(180, 25, 45));
+
+                Resources["StatusPendingForeground"] =
+                    new SolidColorBrush(Color.FromRgb(138, 63, 0));
 
                 Resources["ComboBackground"] =
                     new SolidColorBrush(Color.FromRgb(247, 248, 252));
 
                 Resources["ComboBorder"] =
-                    new SolidColorBrush(Color.FromRgb(185, 190, 205));
+                    new SolidColorBrush(Color.FromRgb(195, 201, 214));
 
                 Resources["ComboHighlight"] =
-                    new SolidColorBrush(Color.FromRgb(218, 224, 247));
+                    new SolidColorBrush(accent.SoftLight);
 
                 Resources["ComboSelected"] =
-                    new SolidColorBrush(Color.FromRgb(194, 205, 240));
+                    new SolidColorBrush(accent.SoftLight);
 
                 Resources["ComboHighlightForeground"] =
                     new SolidColorBrush(Color.FromRgb(30, 31, 40));
@@ -356,7 +425,8 @@ namespace HeadsetMonitor
                 Resources["WindowBackground"] =
                     new SolidColorBrush(Color.FromRgb(16, 17, 22));
 
-                Resources["WindowForeground"] = Brushes.White;
+                Resources["WindowForeground"] =
+                    Brushes.White;
 
                 Resources["Panel"] =
                     new SolidColorBrush(Color.FromRgb(27, 29, 37));
@@ -364,38 +434,135 @@ namespace HeadsetMonitor
                 Resources["Muted"] =
                     new SolidColorBrush(Color.FromRgb(146, 149, 165));
 
-                Resources["Accent"] =
-                    new SolidColorBrush(Color.FromRgb(139, 124, 255));
+                Resources["AccentSoft"] =
+                    new SolidColorBrush(accent.SoftDark);
+
+                Resources["CheckBoxUncheckedBackground"] =
+                    new SolidColorBrush(Color.FromRgb(37, 39, 51));
+
+                Resources["CheckBoxUncheckedBorder"] =
+                    new SolidColorBrush(Color.FromRgb(81, 75, 120));
+
+                // Кнопка настроек
+                Resources["SettingsButtonBackground"] =
+                    new SolidColorBrush(Color.FromRgb(37, 39, 51));
+
+                Resources["SettingsButtonBorder"] =
+                    new SolidColorBrush(Color.FromRgb(65, 68, 80));
+
+                Resources["SettingsButtonForeground"] =
+                    Brushes.White;
+
+                Resources["SettingsButtonHover"] =
+                    new SolidColorBrush(accent.SoftDark);
+
+                Resources["SettingsButtonPressed"] =
+                    new SolidColorBrush(accent.Pressed);
+
+                // USB-индикатор: тёмная тема
+                Resources["UsbBadgeBackground"] =
+                    new SolidColorBrush(Color.FromRgb(25, 59, 43));
+
+                Resources["UsbBadgeForeground"] =
+                    new SolidColorBrush(Color.FromRgb(74, 222, 128));
+
+                Resources["UsbBadgeErrorBackground"] =
+                    new SolidColorBrush(Color.FromRgb(59, 32, 36));
+
+                Resources["UsbBadgeErrorForeground"] =
+                    new SolidColorBrush(Color.FromRgb(248, 113, 113));
+
+                // Статусы подключения
+                Resources["ConnectionConnectedForeground"] =
+                    new SolidColorBrush(Color.FromRgb(74, 222, 128));
+
+                Resources["ConnectionDisconnectedForeground"] =
+                    new SolidColorBrush(Color.FromRgb(248, 113, 113));
+
+                Resources["ConnectionUnknownForeground"] =
+                    new SolidColorBrush(Color.FromRgb(229, 192, 112));
+
+                // Совместимые ресурсы статусов
+                Resources["StatusSuccessForeground"] =
+                    new SolidColorBrush(Color.FromRgb(74, 222, 128));
+
+                Resources["StatusErrorForeground"] =
+                    new SolidColorBrush(Color.FromRgb(248, 113, 113));
+
+                Resources["StatusPendingForeground"] =
+                    new SolidColorBrush(Color.FromRgb(229, 192, 112));
 
                 Resources["ComboBackground"] =
                     new SolidColorBrush(Color.FromRgb(37, 39, 51));
 
                 Resources["ComboBorder"] =
-                    new SolidColorBrush(Color.FromRgb(81, 75, 120));
+                    new SolidColorBrush(Color.FromRgb(65, 68, 80));
 
                 Resources["ComboHighlight"] =
-                    new SolidColorBrush(Color.FromRgb(81, 75, 120));
+                    new SolidColorBrush(accent.SoftDark);
 
                 Resources["ComboSelected"] =
-                    new SolidColorBrush(Color.FromRgb(117, 101, 232));
+                    new SolidColorBrush(accent.Pressed);
 
-                Resources["ComboHighlightForeground"] = Brushes.White;
-                Resources["ComboSelectedForeground"] = Brushes.White;
+                Resources["ComboHighlightForeground"] =
+                    Brushes.White;
+
+                Resources["ComboSelectedForeground"] =
+                    Brushes.White;
 
                 BatteryBarTrack.Background =
                     new SolidColorBrush(Color.FromRgb(48, 50, 61));
             }
 
-            if (isReceiverPresent)
+            // Применяем актуальные цвета USB-плашки сразу,
+            // в том числе при переключении темы.
+            if (receiverPresenceInitialized)
             {
-                UsbStatusText.SetResourceReference(
-                    TextBlock.ForegroundProperty,
-                    "WindowForeground");
+                ApplyReceiverBadgeAppearance(isReceiverPresent);
             }
 
             UpdateBatteryBar();
 
             SettingsView.ApplyTheme();
+
+            trayMenuWindow?.ApplyAppearance(
+                isLightTheme,
+                accent);
+
+            ApplyDarkTitleBar();
+        }
+
+        // Обновляет фон плашки, текст и цвет индикатора USB.
+        private void ApplyReceiverBadgeAppearance(bool present)
+        {
+            if (present)
+            {
+                UsbBadgeBorder.SetResourceReference(
+                    Border.BackgroundProperty,
+                    "UsbBadgeBackground");
+
+                UsbBadgeText.SetResourceReference(
+                    TextBlock.ForegroundProperty,
+                    "UsbBadgeForeground");
+
+                UsbBadgeIndicator.SetResourceReference(
+                    System.Windows.Shapes.Shape.FillProperty,
+                    "StatusSuccessForeground");
+            }
+            else
+            {
+                UsbBadgeBorder.SetResourceReference(
+                    Border.BackgroundProperty,
+                    "UsbBadgeErrorBackground");
+
+                UsbBadgeText.SetResourceReference(
+                    TextBlock.ForegroundProperty,
+                    "UsbBadgeErrorForeground");
+
+                UsbBadgeIndicator.SetResourceReference(
+                    System.Windows.Shapes.Shape.FillProperty,
+                    "StatusErrorForeground");
+            }
         }
 
         // =========================================================
@@ -450,7 +617,85 @@ namespace HeadsetMonitor
         // СИСТЕМНЫЙ ТРЕЙ
         // =========================================================
 
-        // Загружаем нашу фиолетовую иконку.
+        private void TrayIcon_MouseUp(
+            object? sender, Forms.MouseEventArgs e)
+        {
+            if (e.Button != Forms.MouseButtons.Right)
+                return;
+
+            if (trayMenuWindow == null)
+            {
+                trayMenuWindow = new TrayMenuWindow(
+    CheckBatteryFromTray,
+    OpenSettingsFromTray,
+    ToggleWindowFromTray,
+    IsApplicationVisible,
+    ExitApplication);
+
+                trayMenuWindow.Closed += (_, _) =>
+                    trayMenuWindow = null;
+            }
+
+            trayMenuWindow.ApplyAppearance(
+                isLightTheme,
+                AccentPalette.Get(settings.AccentColor));
+
+            trayMenuWindow.ShowNearCursor();
+        }
+
+        private void CheckBatteryFromTray()
+        {
+            _ = CheckBatteryFromTrayAsync();
+        }
+
+        
+private async Task CheckBatteryFromTrayAsync()
+{
+    if (isReading)
+        return;
+
+    DateTime? previousMeasurement = lastMeasurementTime;
+
+    await ReadBatteryAndUpdate(false);
+
+    if (lastMeasurementTime != previousMeasurement &&
+        lastMeasurementPercent.HasValue)
+    {
+        trayIcon.BalloonTipTitle =
+            Localization.T("Заряд Logitech G435");
+
+        trayIcon.BalloonTipText =
+            Localization.T("Текущий заряд: ") +
+            $"{lastMeasurementPercent.Value}%";
+
+        trayIcon.ShowBalloonTip(4000);
+    }
+    else
+    {
+        trayIcon.BalloonTipTitle =
+            Localization.T("Не удалось проверить заряд");
+
+        trayIcon.BalloonTipText =
+            Localization.T("Проверь подключение наушников и USB-передатчика.");
+
+        trayIcon.ShowBalloonTip(4000);
+    }
+}
+
+                  
+
+        private void OpenSettingsFromTray()
+{
+    // Восстанавливаем окно только если оно скрыто или свёрнуто.
+    // Если оно уже открыто, сохраняем его текущее состояние.
+    if (!IsVisible || WindowState == WindowState.Minimized)
+    {
+        RestoreWindow();
+    }
+
+    SettingsButton_Click(this, new RoutedEventArgs());
+}
+
         private static Drawing.Icon CreateTrayIcon()
         {
             string iconPath = Path.Combine(
@@ -460,11 +705,9 @@ namespace HeadsetMonitor
             if (File.Exists(iconPath))
                 return new Drawing.Icon(iconPath);
 
-            // Запасной вариант, если ICO не найден.
             return CreateBatteryIcon(null);
         }
 
-        // Значок с процентом заряда.
         private static Drawing.Icon CreateBatteryIcon(int? percent)
         {
             using var bitmap = new Drawing.Bitmap(32, 32);
@@ -544,7 +787,8 @@ namespace HeadsetMonitor
         private void ApplyDarkTitleBar()
         {
             const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
-            int enabled = 1;
+
+            int enabled = isLightTheme ? 0 : 1;
 
             DwmSetWindowAttribute(
                 new System.Windows.Interop.WindowInteropHelper(this).Handle,
@@ -559,71 +803,100 @@ namespace HeadsetMonitor
             int attribute,
             ref int value,
             int valueSize);
+
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool DestroyIcon(IntPtr handle);
 
-        private void UpdateTrayBatteryIcon(int? percent)
-        {
-            Drawing.Icon newIcon;
+        
+private void UpdateTrayBatteryIcon(int? percent)
+{
+    Drawing.Icon newIcon;
 
-            if (settings.ShowTrayPercentage)
-            {
-                newIcon = CreateBatteryIcon(percent);
-            }
-            else
-            {
-                newIcon = CreateTrayIcon();
-            }
+    if (settings.ShowTrayPercentage)
+    {
+        newIcon = CreateBatteryIcon(percent);
+    }
+    else
+    {
+        newIcon = CreateTrayIcon();
+    }
 
-            var oldIcon = trayIcon.Icon;
+    var oldIcon = trayIcon.Icon;
 
-            trayIcon.Icon = newIcon;
+    trayIcon.Icon = newIcon;
 
-            oldIcon?.Dispose();
+    oldIcon?.Dispose();
 
-            // Показываем последнее успешное измерение,
-            // даже если последующая проверка завершилась ошибкой.
-            if (lastMeasurementPercent.HasValue &&
-                lastMeasurementTime.HasValue)
-            {
-                trayIcon.Text =
-                    $"Headset Monitor | {lastMeasurementPercent.Value}% | " +
-                    lastMeasurementTime.Value.ToString("dd.MM HH:mm");
-            }
-            else
-            {
-                trayIcon.Text =
-                    "Headset Monitor — заряд ещё не проверен";
-            }
-        }
+    if (lastMeasurementPercent.HasValue &&
+        lastMeasurementTime.HasValue)
+    {
+        trayIcon.Text =
+            $"Headset Monitor | {lastMeasurementPercent.Value}% | " +
+            lastMeasurementTime.Value.ToString("dd.MM HH:mm");
+    }
+    else
+    {
+        trayIcon.Text =
+            "Headset Monitor — " +
+            Localization.T("заряд ещё не проверен");
+    }
+}
+
+                 
 
         private void HideToTray()
-        {
-            ShowInTaskbar = false;
-            Hide();
-            WindowState = WindowState.Normal;
-        }
+{
+    if (WindowState != WindowState.Minimized)
+        windowStateBeforeHide = WindowState;
 
-        private void RestoreWindow()
-        {
-            ShowInTaskbar = true;
-            Show();
+    ShowInTaskbar = false;
+    Hide();
+}
 
-            WindowState = WindowState.Normal;
+private void RestoreWindow()
+{
+    ShowInTaskbar = true;
 
-            Activate();
+    if (!IsVisible)
+        Show();
 
-            Topmost = true;
-            Topmost = false;
+    WindowState = windowStateBeforeHide;
 
-            Focus();
-        }
+    Activate();
+
+    Topmost = true;
+    Topmost = false;
+
+    Focus();
+}
+
+private bool IsApplicationVisible()
+{
+    return ShowInTaskbar;
+}
+private void ToggleWindowFromTray()
+{
+    if (IsApplicationVisible())
+        HideToTray();
+    else
+        RestoreWindow();
+}
 
         private void ExitApplication()
         {
+            if (exitRequested)
+                return;
+
             exitRequested = true;
+
+            updateTimer.Stop();
+            deviceMonitorTimer.Stop();
+
             trayIcon.Visible = false;
+
             Close();
+
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void SaveWindowSettings()
@@ -784,13 +1057,9 @@ namespace HeadsetMonitor
 
             if (present)
             {
-                UsbBadgeText.Text = "USB найден";
+                UsbBadgeText.Text = Localization.T("USB найден");
 
-                UsbBadgeText.Foreground =
-                    new SolidColorBrush(
-                        Color.FromRgb(0x4A, 0xDE, 0x80));
-
-                UsbStatusText.Text = "Передатчик обнаружен";
+                UsbStatusText.Text = Localization.T("Передатчик обнаружен");
 
                 UsbStatusText.SetResourceReference(
                     TextBlock.ForegroundProperty,
@@ -800,20 +1069,18 @@ namespace HeadsetMonitor
             }
             else
             {
-                UsbBadgeText.Text = "USB не найден";
+                UsbBadgeText.Text = Localization.T("USB не найден");
 
-                UsbBadgeText.Foreground =
-                    new SolidColorBrush(
-                        Color.FromRgb(0xF8, 0x71, 0x71));
+                UsbStatusText.Text = Localization.T("Передатчик отключён");
 
-                UsbStatusText.Text = "Передатчик отключён";
-
-                UsbStatusText.Foreground =
-                    new SolidColorBrush(
-                        Color.FromRgb(0xF8, 0x71, 0x71));
+                UsbStatusText.SetResourceReference(
+                    TextBlock.ForegroundProperty,
+                    "StatusErrorForeground");
 
                 SetHeadsetConnection(null);
             }
+
+            ApplyReceiverBadgeAppearance(present);
         }
 
         private void SetHeadsetConnection(bool? connected)
@@ -821,43 +1088,43 @@ namespace HeadsetMonitor
             if (!isReceiverPresent)
             {
                 HeadsetConnectionText.Text =
-                    "Наушники: нет USB-передатчика";
+                    Localization.T("Наушники: нет USB-передатчика");
 
-                HeadsetConnectionText.Foreground =
-                    new SolidColorBrush(
-                        Color.FromRgb(0xF8, 0x71, 0x71));
+                HeadsetConnectionText.SetResourceReference(
+                    TextBlock.ForegroundProperty,
+                    "ConnectionDisconnectedForeground");
             }
             else if (connected == true)
             {
                 HeadsetConnectionText.Text =
-                    "Наушники подключены";
+                    Localization.T("Наушники подключены");
 
-                HeadsetConnectionText.Foreground =
-                    new SolidColorBrush(
-                        Color.FromRgb(0x4A, 0xDE, 0x80));
+                HeadsetConnectionText.SetResourceReference(
+                    TextBlock.ForegroundProperty,
+                    "ConnectionConnectedForeground");
             }
             else if (connected == false)
             {
                 HeadsetConnectionText.Text =
-                    "Наушники выключены или не подключены";
+                    Localization.T("Наушники выключены или не подключены");
 
-                HeadsetConnectionText.Foreground =
-                    new SolidColorBrush(
-                        Color.FromRgb(0xF8, 0x71, 0x71));
+                HeadsetConnectionText.SetResourceReference(
+                    TextBlock.ForegroundProperty,
+                    "ConnectionDisconnectedForeground");
             }
             else
             {
                 HeadsetConnectionText.Text =
-                    "Подключение наушников: ещё не проверено";
+                    Localization.T("Подключение наушников: ещё не проверено");
 
-                HeadsetConnectionText.Foreground =
-                    new SolidColorBrush(
-                        Color.FromRgb(0xE5, 0xC0, 0x70));
+                HeadsetConnectionText.SetResourceReference(
+                    TextBlock.ForegroundProperty,
+                    "ConnectionUnknownForeground");
             }
         }
 
         // =========================================================
-        // АВТООБНОВЛЕНИЕ
+        // АВТОМАТИЧЕСКОЕ СЧИТЫВАНИЕ ЗАРЯДА
         // =========================================================
 
         private void AutoUpdateCheckBox_Changed(
@@ -928,126 +1195,139 @@ namespace HeadsetMonitor
         // =========================================================
 
         private async void RefreshButton_Click(
-            object sender, RoutedEventArgs e)
+    object sender, RoutedEventArgs e)
+{
+    if (isReading)
+        return;
+
+    await ReadBatteryAndUpdate(true);
+}
+
+        
+private async Task ReadBatteryAndUpdate(bool manual)
+{
+    if (isReading)
+        return;
+
+    isReading = true;
+
+    RefreshButton.IsEnabled = false;
+    RefreshButton.Content = Localization.T("Считываем...");
+
+    BatteryStatusText.Text =
+        Localization.T("Обращение к USB-передатчику...");
+
+    try
+    {
+        var reading = await Task.Run(ReadBattery);
+
+        ApplyReceiverPresence(true);
+        SetHeadsetConnection(reading.HeadsetConnected);
+
+        LastUpdateText.Text =
+            Localization.T("Последняя проверка: ") +
+            DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss");
+
+        if (!reading.Percent.HasValue ||
+            !reading.Millivolts.HasValue)
         {
-            if (isReading)
-                return;
-
-            var answer = System.Windows.MessageBox.Show(
-                "Во время измерения звук и микрофон могут " +
-                "прерваться примерно на 0,6 секунды.\n\n" +
-                "Продолжить?",
-                "Headset Monitor",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (answer != MessageBoxResult.Yes)
-                return;
-
-            await ReadBatteryAndUpdate(true);
-        }
-
-        private async Task ReadBatteryAndUpdate(bool manual)
-        {
-            if (isReading)
-                return;
-
-            isReading = true;
-
-            RefreshButton.IsEnabled = false;
-            RefreshButton.Content = "Считываем...";
+            lastPercent = null;
+            BatteryPercentText.Text = "—";
 
             BatteryStatusText.Text =
-                "Обращение к USB-передатчику...";
+                Localization.T("Наушники не подключены — заряд получить невозможно");
 
-            try
-            {
-                var reading = await Task.Run(ReadBattery);
+            UpdateBatteryBar();
+            UpdateTrayBatteryIcon(null);
 
-                ApplyReceiverPresence(true);
-
-                SetHeadsetConnection(reading.HeadsetConnected);
-
-                LastUpdateText.Text =
-                    "Последняя проверка: " +
-                    DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss");
-
-                if (!reading.Percent.HasValue ||
-                    !reading.Millivolts.HasValue)
-                {
-                    lastPercent = null;
-
-                    BatteryPercentText.Text = "—";
-
-                    BatteryStatusText.Text =
-                        "Наушники не подключены — заряд получить невозможно";
-
-                    UpdateBatteryBar();
-                    UpdateTrayBatteryIcon(null);
-
-                    return;
-                }
-
-                int newPercent = reading.Percent.Value;
-
-                // Запоминаем только успешное измерение.
-                lastMeasurementPercent = newPercent;
-                lastMeasurementTime = DateTime.Now;
-
-                if (settings.LowBatteryNotification &&
-                    newPercent <= settings.LowBatteryThreshold &&
-                    (!lastNotifiedPercent.HasValue ||
-                     lastNotifiedPercent.Value > settings.LowBatteryThreshold))
-                {
-                    trayIcon.BalloonTipTitle = "Низкий заряд наушников";
-
-                    trayIcon.BalloonTipText =
-                        $"Осталось примерно {newPercent}% заряда Logitech G435.";
-
-                    trayIcon.ShowBalloonTip(5000);
-                }
-
-                lastNotifiedPercent = newPercent;
-
-                lastPercent = newPercent;
-
-                BatteryPercentText.Text = newPercent.ToString();
-
-                BatteryStatusText.Text =
-                    $"{reading.Millivolts.Value} мВ • " +
-                    "приблизительный заряд по напряжению";
-
-                UpdateBatteryBar();
-                UpdateTrayBatteryIcon(newPercent);
-            }
-            catch (Exception ex)
-            {
-                SetHeadsetConnection(null);
-
-                BatteryStatusText.Text =
-                    "Ошибка: " + ex.Message;
-
-                BatteryPercentText.Text = "—";
-
-                lastPercent = null;
-
-                LastUpdateText.Text =
-                    "Последняя проверка завершилась ошибкой: " +
-                    DateTime.Now.ToString("HH:mm:ss");
-
-                UpdateBatteryBar();
-                UpdateTrayBatteryIcon(null);
-            }
-            finally
-            {
-                isReading = false;
-
-                RefreshButton.IsEnabled = true;
-                RefreshButton.Content = "Проверить заряд";
-            }
+            return;
         }
 
-        private void UpdateBatteryBar()
+        int newPercent = reading.Percent.Value;
+
+        lastMeasurementPercent = newPercent;
+        lastMeasurementTime = DateTime.Now;
+
+        if (settings.LowBatteryNotification &&
+            newPercent <= settings.LowBatteryThreshold &&
+            (!lastNotifiedPercent.HasValue ||
+             lastNotifiedPercent.Value > settings.LowBatteryThreshold))
+        {
+            trayIcon.BalloonTipTitle =
+                Localization.T("Низкий заряд наушников");
+
+            trayIcon.BalloonTipText =
+                Localization.T("Осталось примерно ") +
+                $"{newPercent}%" +
+                Localization.T(" заряда Logitech G435.");
+
+            trayIcon.ShowBalloonTip(5000);
+        }
+
+        if (newPercent < 100)
+        {
+            fullBatteryNotified = false;
+        }
+        else if (newPercent >= 100)
+        {
+            if (lastPercent.HasValue &&
+                lastPercent.Value < 100 &&
+                !fullBatteryNotified &&
+                settings.FullBatteryNotification)
+            {
+                trayIcon.BalloonTipTitle =
+                    Localization.T("Наушники полностью заряжены");
+
+                trayIcon.BalloonTipText =
+                    Localization.T("Расчётный заряд Logitech G435 достиг 100%.");
+
+                trayIcon.ShowBalloonTip(5000);
+            }
+
+            fullBatteryNotified = true;
+        }
+
+        lastNotifiedPercent = newPercent;
+        lastPercent = newPercent;
+
+        BatteryPercentText.Text = newPercent.ToString();
+
+        BatteryStatusText.Text =
+            $"{reading.Millivolts.Value} mV • " +
+            Localization.T("приблизительный заряд по напряжению");
+
+System.Diagnostics.Debug.WriteLine(
+    $"LANGUAGE: {settings.Language} | LOCALIZATION: {Localization.CurrentLanguage}");
+
+        UpdateBatteryBar();
+        UpdateTrayBatteryIcon(newPercent);
+    }
+    catch (Exception ex)
+    {
+        SetHeadsetConnection(null);
+
+        BatteryStatusText.Text =
+            Localization.T("Ошибка: ") + ex.Message;
+
+        BatteryPercentText.Text = "—";
+        lastPercent = null;
+
+        LastUpdateText.Text =
+            Localization.T("Последняя проверка завершилась ошибкой: ") +
+            DateTime.Now.ToString("HH:mm:ss");
+
+        UpdateBatteryBar();
+        UpdateTrayBatteryIcon(null);
+    }
+    finally
+    {
+        isReading = false;
+
+        RefreshButton.IsEnabled = true;
+        RefreshButton.Content =
+            Localization.T("Проверить заряд");
+    }
+}                private void UpdateBatteryBar()
         {
             if (!lastPercent.HasValue)
             {
@@ -1432,12 +1712,16 @@ namespace HeadsetMonitor
                     MessageBoxImage.Warning);
             }
         }
+
         protected override void OnClosed(EventArgs e)
         {
             SaveWindowSettings();
 
             updateTimer.Stop();
             deviceMonitorTimer.Stop();
+
+            trayMenuWindow?.Close();
+            trayMenuWindow = null;
 
             trayIcon.Visible = false;
 

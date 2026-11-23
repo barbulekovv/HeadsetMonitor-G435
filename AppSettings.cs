@@ -1,13 +1,17 @@
-
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace HeadsetMonitor
 {
     public class AppSettings
     {
+        public string Language { get; set; } = "ru";
+
         public string Theme { get; set; } = "Dark";
+
+        public string AccentColor { get; set; } = "Purple";
 
         public bool StartWithWindows { get; set; } = false;
         public bool StartMinimizedToTray { get; set; } = false;
@@ -24,6 +28,7 @@ namespace HeadsetMonitor
 
         public bool LowBatteryNotification { get; set; } = true;
         public int LowBatteryThreshold { get; set; } = 20;
+        public bool FullBatteryNotification { get; set; } = true;
 
         public bool ShowTechnicalInfo { get; set; } = false;
         public bool ShowTrayPercentage { get; set; } = true;
@@ -100,11 +105,20 @@ namespace HeadsetMonitor
 
         private void Validate()
         {
+            if (Language != "ru" && Language != "en")
+                Language = "ru";
+
             if (Theme != "Dark" &&
                 Theme != "Light" &&
                 Theme != "System")
             {
                 Theme = "Dark";
+            }
+
+            if (!AccentPalette.Presets.Any(
+                preset => preset.Key == AccentColor))
+            {
+                AccentColor = "Purple";
             }
 
             if (UpdateIntervalMinutes != 5 &&

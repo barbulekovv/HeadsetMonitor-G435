@@ -1,4 +1,4 @@
-
+﻿
 <Window x:Class="HeadsetMonitor.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -19,16 +19,28 @@
         <SolidColorBrush x:Key="WindowForeground" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="Panel" Color="#1B1D25"/>
         <SolidColorBrush x:Key="Muted" Color="#9295A5"/>
-        <SolidColorBrush x:Key="Accent" Color="#8B7CFF"/>
+
+        <SolidColorBrush x:Key="Accent" Color="#7565D9"/>
+        <SolidColorBrush x:Key="AccentHover" Color="#8677E8"/>
+        <SolidColorBrush x:Key="AccentPressed" Color="#5D4DBB"/>
+        <SolidColorBrush x:Key="AccentSoft" Color="#342D52"/>
+
+        <SolidColorBrush x:Key="CheckBoxUncheckedBackground" Color="#252733"/>
+        <SolidColorBrush x:Key="CheckBoxUncheckedBorder" Color="#514B78"/>
+
+        <SolidColorBrush x:Key="UsbBadgeBackground" Color="#193B2B"/>
+        <SolidColorBrush x:Key="UsbBadgeForeground" Color="#4ADE80"/>
+        <SolidColorBrush x:Key="StatusSuccessForeground" Color="#4ADE80"/>
+        <SolidColorBrush x:Key="StatusErrorForeground" Color="#F87171"/>
+        <SolidColorBrush x:Key="StatusPendingForeground" Color="#8A3F00"/>
 
         <SolidColorBrush x:Key="ComboBackground" Color="#252733"/>
         <SolidColorBrush x:Key="ComboBorder" Color="#514B78"/>
-        <SolidColorBrush x:Key="ComboHighlight" Color="#514B78"/>
-        <SolidColorBrush x:Key="ComboSelected" Color="#7565E8"/>
+        <SolidColorBrush x:Key="ComboHighlight" Color="#342D52"/>
+        <SolidColorBrush x:Key="ComboSelected" Color="#5D4DBB"/>
         <SolidColorBrush x:Key="ComboHighlightForeground" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="ComboSelectedForeground" Color="#FFFFFF"/>
 
-        <!-- CUSTOM SCROLLBAR -->
         <Style TargetType="{x:Type ScrollBar}">
             <Setter Property="Width" Value="10"/>
             <Setter Property="MinWidth" Value="10"/>
@@ -51,19 +63,15 @@
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="{x:Type Thumb}">
                                                 <Border x:Name="ThumbBorder"
-                                                        Background="#7565E8"
+                                                        Background="{DynamicResource Accent}"
                                                         CornerRadius="5"
                                                         Margin="1,0"/>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="ThumbBorder"
-                                                                Property="Background"
-                                                                Value="#8B7CFF"/>
+                                                        <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource AccentHover}"/>
                                                     </Trigger>
                                                     <Trigger Property="IsDragging" Value="True">
-                                                        <Setter TargetName="ThumbBorder"
-                                                                Property="Background"
-                                                                Value="#5145B8"/>
+                                                        <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource AccentPressed}"/>
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
@@ -95,16 +103,25 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Border x:Name="CheckBorder" Width="17" Height="17"
-                                    CornerRadius="5" Background="#252733"
-                                    BorderBrush="#514B78" BorderThickness="1"
+                            <Border x:Name="CheckBorder"
+                                    Width="17"
+                                    Height="17"
+                                    CornerRadius="5"
+                                    Background="{DynamicResource CheckBoxUncheckedBackground}"
+                                    BorderBrush="{DynamicResource CheckBoxUncheckedBorder}"
+                                    BorderThickness="1"
                                     VerticalAlignment="Center">
-                                <Path x:Name="CheckMark" Data="M 3 8 L 6.5 11.5 L 14 4"
-                                      Stroke="White" StrokeThickness="2"
-                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"
-                                      StrokeLineJoin="Round" Visibility="Collapsed"/>
+                                <Path x:Name="CheckMark"
+                                      Data="M 3 8 L 6.5 11.5 L 14 4"
+                                      Stroke="White"
+                                      StrokeThickness="2"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round"
+                                      Visibility="Collapsed"/>
                             </Border>
-                            <ContentPresenter Grid.Column="1" Margin="9,0,0,0"
+                            <ContentPresenter Grid.Column="1"
+                                              Margin="9,0,0,0"
                                               VerticalAlignment="Center"
                                               RecognizesAccessKey="True"
                                               Content="{TemplateBinding Content}"
@@ -113,12 +130,12 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="CheckBorder" Property="Background" Value="#7565E8"/>
-                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="#8B7CFF"/>
+                                <Setter TargetName="CheckBorder" Property="Background" Value="{DynamicResource Accent}"/>
+                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="{DynamicResource AccentHover}"/>
                                 <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="#8B7CFF"/>
+                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="{DynamicResource AccentHover}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.5"/>
@@ -137,7 +154,7 @@
 
         <Style x:Key="RefreshButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="#7565E8"/>
+            <Setter Property="Background" Value="{DynamicResource Accent}"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="12"/>
@@ -156,10 +173,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#8B7CFF"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AccentHover}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#5145B8"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AccentPressed}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.55"/>
@@ -181,17 +198,18 @@
                                 CornerRadius="7">
                             <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"
                                               RecognizesAccessKey="True"
                                               TextElement.Foreground="{TemplateBinding Foreground}"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#8B7CFF"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#8B7CFF"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AccentSoft}"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource Accent}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#5145B8"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#5145B8"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AccentPressed}"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource AccentPressed}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.55"/>
@@ -201,6 +219,10 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="SettingsButtonStyle"
+               TargetType="{x:Type Button}"
+               BasedOn="{StaticResource FeedbackButtonStyle}"/>
 
         <Style x:Key="DarkComboBoxItem" TargetType="{x:Type ComboBoxItem}">
             <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
@@ -213,7 +235,8 @@
                     <ControlTemplate TargetType="{x:Type ComboBoxItem}">
                         <Border x:Name="ItemBorder"
                                 Background="{TemplateBinding Background}"
-                                CornerRadius="6" Margin="3">
+                                CornerRadius="6"
+                                Margin="3">
                             <ContentPresenter Margin="{TemplateBinding Padding}"
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -285,7 +308,6 @@
                                     </ControlTemplate>
                                 </ToggleButton.Template>
                             </ToggleButton>
-
                             <ContentPresenter x:Name="ContentSite"
                                               IsHitTestVisible="False"
                                               Content="{TemplateBinding SelectionBoxItem}"
@@ -295,7 +317,6 @@
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Left"
                                               TextElement.Foreground="{DynamicResource WindowForeground}"/>
-
                             <Popup x:Name="Popup"
                                    Placement="Bottom"
                                    IsOpen="{TemplateBinding IsDropDownOpen}"
@@ -333,7 +354,6 @@
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       CanContentScroll="False">
-
             <Grid x:Name="RootGrid" Margin="22">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -341,55 +361,55 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- HEADER -->
                 <Grid Grid.Row="0" Margin="0,0,0,18">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="HEADSET MONITOR"
                                    FontSize="11"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Accent}"/>
-
                         <TextBlock Text="Мои устройства"
                                    FontSize="26"
                                    FontWeight="SemiBold"
                                    TextWrapping="Wrap"
                                    Margin="0,5,0,0"/>
-
                         <TextBlock Text="Мониторинг аккумулятора и подключения"
                                    FontSize="12"
                                    Foreground="{DynamicResource Muted}"
                                    TextWrapping="Wrap"
                                    Margin="0,3,0,0"/>
                     </StackPanel>
-
                     <Button Grid.Column="1"
                             Content="⚙ Настройки"
-                            Style="{StaticResource RefreshButtonStyle}"
-                            Height="38"
-                            Padding="12,0"
+                            Style="{StaticResource SettingsButtonStyle}"
+                            Height="42"
+                            MinWidth="126"
+                            Padding="18,0"
                             Margin="10,5,0,0"
+                            Background="{DynamicResource Panel}"
+                            Foreground="{DynamicResource WindowForeground}"
+                            BorderBrush="{DynamicResource ComboBorder}"
+                            BorderThickness="1"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Cursor="Hand"
                             VerticalAlignment="Top"
                             Click="SettingsButton_Click"/>
                 </Grid>
 
-                <!-- MAIN CONTENT -->
                 <Grid x:Name="MainGrid" Grid.Row="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition x:Name="MainColumn" Width="2*"/>
                         <ColumnDefinition x:Name="SideColumn" Width="*"/>
                     </Grid.ColumnDefinitions>
-
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- HEADSET CARD -->
                     <Border x:Name="HeadsetCard"
                             Grid.Row="0"
                             Grid.Column="0"
@@ -401,62 +421,55 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-
-                            <!-- DEVICE INFO -->
                             <Grid Grid.Row="0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-
                                 <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                     <TextBlock Text="ПОДКЛЮЧЕННОЕ УСТРОЙСТВО"
                                                FontSize="10"
                                                FontWeight="Bold"
                                                Foreground="{DynamicResource Muted}"
                                                TextWrapping="Wrap"/>
-
                                     <TextBlock Text="Logitech G435"
                                                FontSize="22"
                                                FontWeight="SemiBold"
                                                TextWrapping="Wrap"
                                                Margin="0,9,0,0"/>
-
                                     <TextBlock Text="LIGHTSPEED Wireless"
                                                FontSize="13"
                                                Foreground="{DynamicResource Muted}"
                                                TextWrapping="Wrap"
                                                Margin="0,3,0,0"/>
                                 </StackPanel>
-
-                                <Border Grid.Column="1"
+                                <Border x:Name="UsbBadgeBorder"
+                                        Grid.Column="1"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Top"
-                                        Background="#193B2B"
+                                        Background="{DynamicResource UsbBadgeBackground}"
                                         CornerRadius="10"
                                         Padding="8,5">
                                     <StackPanel Orientation="Horizontal">
-                                        <Ellipse Width="7"
+                                        <Ellipse x:Name="UsbBadgeIndicator"
+                                                 Width="7"
                                                  Height="7"
-                                                 Fill="#4ADE80"
+                                                 Fill="{DynamicResource StatusSuccessForeground}"
                                                  VerticalAlignment="Center"
                                                  Margin="0,0,6,0"/>
-
                                         <TextBlock x:Name="UsbBadgeText"
                                                    Text="USB проверяется"
                                                    FontSize="10"
-                                                   Foreground="#E5C070"/>
+                                                   Foreground="{DynamicResource UsbBadgeForeground}"/>
                                     </StackPanel>
                                 </Border>
                             </Grid>
 
-                            <!-- BATTERY -->
                             <StackPanel Grid.Row="1" Margin="0,24,0,24">
                                 <TextBlock Text="УРОВЕНЬ ЗАРЯДА"
                                            FontSize="10"
                                            FontWeight="Bold"
                                            Foreground="{DynamicResource Muted}"/>
-
                                 <StackPanel Orientation="Horizontal"
                                             VerticalAlignment="Bottom"
                                             Margin="0,5,0,12">
@@ -464,13 +477,11 @@
                                                Text="—"
                                                FontSize="58"
                                                FontWeight="SemiBold"/>
-
                                     <TextBlock Text="%"
                                                FontSize="24"
                                                Foreground="{DynamicResource Muted}"
                                                Margin="7,0,0,10"/>
                                 </StackPanel>
-
                                 <Border x:Name="BatteryBarTrack"
                                         Background="#30323D"
                                         Height="9"
@@ -482,7 +493,6 @@
                                             HorizontalAlignment="Left"
                                             CornerRadius="6"/>
                                 </Border>
-
                                 <TextBlock x:Name="BatteryStatusText"
                                            Text="Нажмите кнопку, чтобы считать заряд"
                                            FontSize="11"
@@ -491,21 +501,26 @@
                                            TextWrapping="Wrap"/>
                             </StackPanel>
 
-                            <!-- REFRESH BUTTON -->
-                            <Button x:Name="RefreshButton"
-                                    Grid.Row="2"
-                                    Content="Проверить заряд"
-                                    Click="RefreshButton_Click"
-                                    Style="{StaticResource RefreshButtonStyle}"/>
+                            <StackPanel Grid.Row="2">
+                                <Button x:Name="RefreshButton"
+                                        Content="Проверить заряд"
+                                        Click="RefreshButton_Click"
+                                        Style="{StaticResource RefreshButtonStyle}"/>
+
+                                <TextBlock Text="Во время измерения звук и микрофон могут прерваться примерно на 0,6 секунды."
+                                           FontSize="10"
+                                           Foreground="{DynamicResource Muted}"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Margin="4,7,4,0"/>
+                            </StackPanel>
                         </Grid>
                     </Border>
 
-                    <!-- SIDE PANEL -->
                     <StackPanel x:Name="SidePanel"
                                 Grid.Row="0"
                                 Grid.Column="1">
-
-                        <!-- STATUS -->
                         <Border Style="{StaticResource PanelCard}"
                                 Margin="0,0,0,10">
                             <StackPanel>
@@ -513,21 +528,18 @@
                                            FontSize="10"
                                            FontWeight="Bold"
                                            Foreground="{DynamicResource Muted}"/>
-
                                 <TextBlock x:Name="UsbStatusText"
                                            Text="Проверка USB-передатчика..."
                                            FontSize="15"
                                            FontWeight="SemiBold"
                                            TextWrapping="Wrap"
                                            Margin="0,10,0,4"/>
-
                                 <TextBlock x:Name="HeadsetConnectionText"
                                            Text="Подключение наушников: ещё не проверено"
                                            FontSize="12"
-                                           Foreground="#E5C070"
+                                           Foreground="{DynamicResource StatusPendingForeground}"
                                            TextWrapping="Wrap"
                                            Margin="0,12,0,0"/>
-
                                 <TextBlock Text="Состояние наушников проверяется при считывании заряда"
                                            FontSize="10"
                                            Foreground="{DynamicResource Muted}"
@@ -536,7 +548,6 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- USB INFO -->
                         <Border x:Name="TechnicalInfoCard"
                                 Style="{StaticResource PanelCard}"
                                 Margin="0,0,0,10">
@@ -545,44 +556,39 @@
                                            FontSize="10"
                                            FontWeight="Bold"
                                            Foreground="{DynamicResource Muted}"/>
-
                                 <TextBlock Text="VID: 046D"
                                            FontSize="13"
                                            Margin="0,10,0,4"/>
-
                                 <TextBlock Text="PID: 0ACB"
                                            FontSize="13"/>
                             </StackPanel>
                         </Border>
 
-                        <!-- UPDATE -->
-                        <Border Style="{StaticResource PanelCard}">
+                        <Border Style="{StaticResource PanelCard}"
+                                Margin="0,0,0,10">
                             <StackPanel>
-                                <TextBlock Text="ОБНОВЛЕНИЕ"
+                                <TextBlock Text="АВТОМАТИЧЕСКОЕ СЧИТЫВАНИЕ ЗАРЯДА"
                                            FontSize="10"
                                            FontWeight="Bold"
-                                           Foreground="{DynamicResource Muted}"/>
-
-                                <TextBlock Text="Автоматический режим"
+                                           Foreground="{DynamicResource Muted}"
+                                           TextWrapping="Wrap"/>
+                                <TextBlock Text="Периодическая проверка"
                                            FontSize="15"
                                            FontWeight="SemiBold"
                                            Margin="0,10,0,10"/>
-
                                 <CheckBox x:Name="AutoUpdateCheckBox"
                                           Style="{StaticResource RoundedCheckBoxStyle}"
-                                          Content="Включить автообновление"
+                                          Content="Включить автоматическую проверку"
                                           IsChecked="True"
                                           Foreground="{DynamicResource WindowForeground}"
                                           FontSize="12"
                                           Margin="0,0,0,12"
                                           Checked="AutoUpdateCheckBox_Changed"
                                           Unchecked="AutoUpdateCheckBox_Changed"/>
-
-                                <TextBlock Text="Интервал проверки"
+                                <TextBlock Text="Интервал считывания"
                                            FontSize="11"
                                            Foreground="{DynamicResource Muted}"
                                            Margin="0,0,0,6"/>
-
                                 <ComboBox x:Name="UpdateIntervalComboBox"
                                           Style="{StaticResource DarkComboBox}"
                                           SelectedIndex="1"
@@ -593,14 +599,12 @@
                                     <ComboBoxItem Content="30 минут" Tag="30"/>
                                     <ComboBoxItem Content="60 минут" Tag="60"/>
                                 </ComboBox>
-
                                 <TextBlock x:Name="LastUpdateText"
                                            Text="Последняя проверка: ещё не выполнялась"
                                            FontSize="10"
                                            Foreground="{DynamicResource Muted}"
                                            TextWrapping="Wrap"
                                            Margin="0,12,0,0"/>
-
                                 <TextBlock Text="Автоматическое считывание может кратковременно прерывать звук."
                                            FontSize="10"
                                            Foreground="{DynamicResource Muted}"
@@ -611,13 +615,11 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- FOOTER -->
                 <Grid Grid.Row="2" Margin="0,15,0,0">
-                    <TextBlock Text="HEADSET MONITOR  •  VERSION 1.0.1"
+                    <TextBlock Text="HEADSET MONITOR  •  VERSION 1.0.2"
                                FontSize="9"
                                Foreground="{DynamicResource Muted}"
                                VerticalAlignment="Center"/>
-
                     <Button Content="Обратная связь"
                             Height="30"
                             Padding="12,0"
@@ -631,7 +633,6 @@
                             Cursor="Hand"
                             Style="{StaticResource FeedbackButtonStyle}"
                             Click="FeedbackButton_Click"/>
-
                     <TextBlock Text="Made with ♥"
                                FontSize="9"
                                Foreground="{DynamicResource Muted}"
@@ -643,3 +644,4 @@
         <local:SettingsView x:Name="SettingsView" Visibility="Collapsed"/>
     </Grid>
 </Window>
+

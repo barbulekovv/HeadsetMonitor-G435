@@ -1,6 +1,6 @@
 
 #define MyAppName "Headset Monitor"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion GetVersionNumbersString(AddBackslash(SourcePath) + "bin\Release\net10.0-windows\win-x64\publish\HeadsetMonitor.exe")
 #define MyAppPublisher "Headset Monitor"
 #define MyAppExeName "HeadsetMonitor.exe"
 
@@ -36,4 +36,3 @@ Name: "{autodesktop}\Headset Monitor"; Filename: "{app}\HeadsetMonitor.exe"; Ico
 
 [Run]
 Filename: "{app}\HeadsetMonitor.exe"; Description: "Запустить Headset Monitor"; Flags: postinstall nowait skipifsilent
-
